@@ -1,40 +1,43 @@
 public class ProdKons {
 	
 	public static void main(String args[]) {
-		Container container = new Container(10);
-		Producent prod1 = new Producent(container, "Producent 1");
-		Konsument kons1 = new Konsument(container, "Konsument 1");
-		Konsument kons2 = new Konsument(container, "Konsument 2");
+		Pojemnik pojemnik = new Pojemnik(10);
+		Producent prod1 = new Producent(pojemnik, "Producent 1");
+		Konsument kons1 = new Konsument(pojemnik, "Konsument 1");
+		Konsument kons2 = new Konsument(pojemnik, "Konsument 2");
+		Konsument kons3 = new Konsument(pojemnik, "Konsument 3");
 		Thread w1 = new Thread(prod1);
 		Thread w2 = new Thread(kons1);
 		Thread w3 = new Thread(kons2);
+		Thread w4 = new Thread(kons3);
 		w1.start();
 		w2.start();
 		w3.start();
+		w4.start();
 	}
 	
 }
 
-class Container{
-	int capacity;
-	int numberOfItems=0;
-	Container(int capacity) {
-		this.capacity=capacity;
+class Pojemnik{
+	int pojemnosc;
+	int liczbaProduktow=0;
+	Pojemnik(int pojemnosc) {
+		this.pojemnosc=pojemnosc;
 	}
-	public void produce() {
-		numberOfItems++;
+	public void produkuj() {
+		liczbaProduktow++;
 	}
-	public void consume() {
-		numberOfItems--;
+	public void konsumuj() {
+		liczbaProduktow--;
 	}
 }
 
 class Producent implements Runnable {
-	Container p;
-	String name;
-	Producent(Container p, String name){
+	Pojemnik p;
+	String imie;
+	Producent(Pojemnik p, String imie){
 		this.p=p;
-		this.name=name;
+		this.imie=imie;
 	}
 	@Override
 	public void run() {
@@ -43,15 +46,15 @@ class Producent implements Runnable {
 				Thread.sleep((int)(100*Math.random()+50));
 			}catch (InterruptedException e) {}
 			synchronized (p) {
-				while (p.numberOfItems == p.capacity) {
+				while (p.liczbaProduktow == p.pojemnosc) {
 					try {
-						System.out.println("Bufor jest pelen. " + name + " czeka na konsumpcje przez konsumenta.");
+						System.out.println("Bufor jest pelen. " + imie + " czeka na konsumpcje przez konsumenta.");
 						p.wait();
 					}catch (InterruptedException e) {}
 				}
-				p.produce();
-				System.out.println(name + " wyprodukowal 1 produkt.");
-				System.out.println("Liczba produktow: " + p.numberOfItems);
+				p.produkuj();
+				System.out.println(imie + " wyprodukowal 1 produkt.");
+				System.out.println("Liczba produktow: " + p.liczbaProduktow);
 				p.notify();
 			}
 		}
@@ -59,28 +62,28 @@ class Producent implements Runnable {
 }
 
 class Konsument implements Runnable {
-	Container p;
-	String name;
-	Konsument(Container p, String name){
+	Pojemnik p;
+	String imie;
+	Konsument(Pojemnik p, String imie){
 		this.p=p;
-		this.name=name;
+		this.imie=imie;
 	}
 	@Override
 	public void run() {
 		while(true) {
 			try {
-				Thread.sleep((int)(200*Math.random()+75));
+				Thread.sleep((int)(300*Math.random()+150));
 			}catch (InterruptedException e) {}
 			synchronized (p) {
-				while (p.numberOfItems==0) {
-					System.out.println("Bufor jest pusty. " + name + " czeka na produkcje przez producenta.");
+				while (p.liczbaProduktow==0) {
+					System.out.println("Bufor jest pusty. " + imie + " czeka na produkcje przez producenta.");
 					try {
 						p.wait();
 					}catch (InterruptedException e) {}
 				}
-				p.consume();
-				System.out.println(name + " skonsumowal 1 produkt.");
-				System.out.println("Liczba produktow: " + p.numberOfItems);
+				p.konsumuj();
+				System.out.println(imie + " skonsumowal 1 produkt.");
+				System.out.println("Liczba produktow: " + p.liczbaProduktow);
 				p.notify();
 			}
 		}
